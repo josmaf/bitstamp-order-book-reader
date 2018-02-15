@@ -1,0 +1,122 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.jmf</groupId>
+	<artifactId>bitstamp-order-book-reader</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>bitstamp-order-book-reader</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.2.3</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<finalName>bitstamp-order-book-reader</finalName>
+		<plugins>
+
+			<!-- Make this jar executable -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<outputDirectory>${project.build.directory}/assembly</outputDirectory>
+					<!-- do not include properties file in your Jar -->
+					<excludes>
+						<exclude>**/config.properties</exclude>
+					</excludes>
+					<archive>
+						<manifest>
+							<!-- Jar file entry point -->
+							<mainClass>org.jmf.job.JobExecutor</mainClass>
+							<classpathPrefix>libs/</classpathPrefix>
+							<addClasspath>true</addClasspath>	
+						</manifest>
+
+					</archive>
+				</configuration>
+			</plugin>
+
+			<!-- Copy project dependency -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.5.1</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<!-- exclude junit, we need runtime dependency only -->
+							<includeScope>runtime</includeScope>
+							<outputDirectory>${project.build.directory}/assembly/libs/</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<!-- Generate deliverable zip -->
+			<!-- IMPORTANT: this plugin should be executed after two previous plugins. 
+				So, order is important! -->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2-beta-5</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/assembly.xml</descriptor>
+					</descriptors>
+					<finalName>${project.name}</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- append to the packaging phase. -->
+						<goals>
+							<goal>single</goal> <!-- goals == mojos -->
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+
+		<!-- Copy properties files to /assembly/conf folder, which will be used 
+			to generate final zip -->
+		<resources>
+			<resource>
+				<filtering>false</filtering>
+				<directory>${project.basedir}/src/main/resources/conf</directory>
+				<targetPath>${project.build.directory}/assembly</targetPath>
+				<includes>
+					<include>*.properties</include>
+				</includes>
+			</resource>
+		</resources>
+
+
+	</build>
+
+
+
+</project>
